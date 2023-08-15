@@ -25,17 +25,28 @@ ENV_DIR=${3:-}
 BIN_DIR=$BUILD_DIR/.chromedriver/bin
 mkdir -p $BIN_DIR
 
+CHROMELABS_URL="https://googlechromelabs.github.io/chrome-for-testing/"
+
 if [ -f $ENV_DIR/CHROMEDRIVER_VERSION ]; then
   VERSION=$(cat $ENV_DIR/CHROMEDRIVER_VERSION)
+  ZIP_URL=`curl -s $CHROMELABS_URL/known-good-versions-with-downloads.json | jq -r --arg version $VERSION '.versions[] | select(.version == $version).downloads.chromedriver[] | select(.platform == "linux64").url'`
 else
   topic "Looking up latest chromedriver version"
-  LATEST="https://chromedriver.storage.googleapis.com/LATEST_RELEASE"
-  VERSION=`curl -s $LATEST`
+  # This is no longer accurate for chrome versions 115+.  Instead we are
+  # supposed to parse the output of
+  # https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json
+  # for the latest stable version.
+  # LATEST="https://chromedriver.storage.googleapis.com/LATEST_RELEASE"
+  STABLE=`curl -s $CHROMELABS_URL/last-known-good-versions-with-downloads.json | jq '."channels"."Stable"'`
+  VERSION=`jq -r '.version'<<< $STABLE`
+  ZIP_URL=`jq -r '.downloads.chromedriver[] | select(.platform == "linux64").url' <<< $STABLE`
 fi
 indent "Version $VERSION"
 
 topic "Downloading chromedriver v$VERSION"
-ZIP_URL="https://chromedriver.storage.googleapis.com/$VERSION/chromedriver_linux64.zip"
+
+# This is no longer accurate for chrome versions 115+
+# ZIP_URL="https://chromedriver.storage.googleapis.com/$VERSION/chromedriver_linux64.zip"
 ZIP_LOCATION="/tmp/chromedriver.zip"
 curl -s -o $ZIP_LOCATION $ZIP_URL
 unzip -o $ZIP_LOCATION -d $BIN_DIR

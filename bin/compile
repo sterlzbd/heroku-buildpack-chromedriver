@@ -55,5 +55,6 @@ indent "Downloaded"
 
 topic "Creating chromedriver export scripts"
 mkdir -p $BUILD_DIR/.profile.d
-echo "export PATH=\$PATH:\$HOME/.chromedriver/bin" >> $BUILD_DIR/.profile.d/chromedriver.sh
+# echo "export PATH=\$PATH:\$HOME/.chromedriver/bin" >> $BUILD_DIR/.profile.d/chromedriver.sh
+echo "export PATH=\$PATH:\$HOME/.chromedriver/bin/chromedriver-linux64" >> $BUILD_DIR/.profile.d/chromedriver.sh
 indent "Created"
